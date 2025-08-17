@@ -224,7 +224,7 @@ app.post('/chat', async (req, res) => {
 const loadEmbeddings = async () => {
     try {
         console.log('Loading pre-computed embeddings...');
-        const data = await fs.readFile('./gita-embeddings.json', 'utf-8');
+        const data = await fs.readFile('gita-embeddings.json', 'utf-8');
         pdfChunksWithEmbeddings = JSON.parse(data);
         
         if (!pdfChunksWithEmbeddings || pdfChunksWithEmbeddings.length === 0) {
