@@ -6,13 +6,14 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const pdf = require('pdf-parse');
 const NodeCache = require('node-cache');
 const cors = require('cors');
+require('dotenv').config();
 const cosineSimilarity = require('cosine-similarity'); // NEW: For vector comparison
 
 // --- Configuration ---
-const API_KEY = process.env.GEMINI_API_KEY || '***REMOVED***';
+const API_KEY = process.env.GEMINI_API_KEY || 'xxxx';
 const PDF_PATH = './Bhagavad Gita 2.pdf'; // UPDATED file path
 const PORT = process.env.PORT || 3000;
-const LOG_FILE = './server.log'; // Added for logging
+// const LOG_FILE = './server.log'; // Added for logging
 
 // --- Initialization ---
 const app = express();
@@ -74,7 +75,7 @@ const sanitizeText = (text) => {
  */
 const retrieveRelevantChunksVector = async (query, history, topK = 5) => {
     if (pdfChunksWithEmbeddings.length === 0) {
-        await logToFile("WARN: PDF chunks not processed yet. Returning empty context.");
+        // await logToFile("WARN: PDF chunks not processed yet. Returning empty context.");
         return [];
     }
     const recentHistoryText = history.slice(-4).map(h => (h?.parts?.text ?? '')).filter(Boolean).join('\n');
@@ -106,7 +107,7 @@ const retrieveRelevantChunksVector = async (query, history, topK = 5) => {
  */
 const processPdf = async () => {
     try {
-        await logToFile('INFO: Starting PDF processing...');
+        // await logToFile('INFO: Starting PDF processing...');
         console.log('Starting PDF processing...');
         const dataBuffer = await fs.readFile(PDF_PATH);
         const data = await pdf(dataBuffer);
@@ -116,7 +117,7 @@ const processPdf = async () => {
         const sanitizedChunks = chunks.map(sanitizeText);
         const nonEmptyChunks = sanitizedChunks.filter(chunk => chunk.length > 0);
 
-        await logToFile(`INFO: PDF processed. ${nonEmptyChunks.length} valid chunks found. Now creating embeddings in batches...`);
+        // await logToFile(`INFO: PDF processed. ${nonEmptyChunks.length} valid chunks found. Now creating embeddings in batches...`);
         console.log(`INFO: PDF processed. ${nonEmptyChunks.length} valid chunks found. Now creating embeddings in batches...`);
 
         if (nonEmptyChunks.length === 0) throw new Error("PDF processing resulted in no valid text chunks after sanitization.");
@@ -127,7 +128,7 @@ const processPdf = async () => {
         for (let i = 0; i < nonEmptyChunks.length; i += BATCH_SIZE) {
             const batch = nonEmptyChunks.slice(i, i + BATCH_SIZE);
             const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
-            await logToFile(`INFO: Processing batch ${batchNumber}...`);
+            // await logToFile(`INFO: Processing batch ${batchNumber}...`);
             console.log(`INFO: Processing batch ${batchNumber}...`);
             
             const embeddingResult = await embeddingModel.batchEmbedContents({
@@ -142,11 +143,11 @@ const processPdf = async () => {
             embedding: allEmbeddings[index].values,
         }));
 
-        await logToFile('INFO: Embeddings created successfully. Ready to receive requests.');
+        // await logToFile('INFO: Embeddings created successfully. Ready to receive requests.');
         console.log('Embeddings created successfully. Ready to receive requests.');
     } catch (error) {
         const errorMsg = `FATAL: Error processing PDF or creating embeddings: ${error.message}`;
-        await logToFile(errorMsg);
+        // await logToFile(errorMsg);
         console.error(errorMsg, error);
         process.exit(1);
     }
@@ -217,9 +218,27 @@ app.post('/chat', async (req, res) => {
     }
 });
 
+const loadEmbeddings = async () => {
+    try {
+        console.log('Loading pre-computed embeddings...');
+        const data = await fs.readFile('./gita-embeddings.json', 'utf-8');
+        pdfChunksWithEmbeddings = JSON.parse(data);
+        
+        if (!pdfChunksWithEmbeddings || pdfChunksWithEmbeddings.length === 0) {
+           throw new Error("Embeddings file is empty or invalid.");
+        }
+
+        console.log(`✅ Embeddings loaded successfully. ${pdfChunksWithEmbeddings.length} chunks ready.`);
+    } catch (error) {
+        const errorMsg = `FATAL: Could not load embeddings file: ${error.message}`;
+        console.error(errorMsg, error);
+        process.exit(1); // Exit if embeddings can't be loaded
+    }
+};
+
 // --- Server Startup ---
 const startServer = async () => {
-    await processPdf(); // Process the PDF before starting the server
+    await loadEmbeddings(); // Process the PDF before starting the server
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
     });
