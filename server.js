@@ -7,6 +7,7 @@ const pdf = require('pdf-parse');
 const NodeCache = require('node-cache');
 const cors = require('cors');
 require('dotenv').config();
+const path = require('path');
 const cosineSimilarity = require('cosine-similarity'); // NEW: For vector comparison
 
 // --- Configuration ---
@@ -19,6 +20,8 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 // Model for chat generation
