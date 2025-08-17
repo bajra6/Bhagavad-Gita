@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kurukshetra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jacques+Francois&display=swap" rel="stylesheet">
+    <style>
+        /* General Reset and Body Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Jacques Francois", sans-serif;
+            background-color: #FDF6E3; /* Mild beige tint for the whole page */
+            color: #1f2937;
+            overflow: hidden;
+        }
+        
+        /* Utility Class */
+        .hidden {
+            display: none;
+        }
+
+        /* Chat Page Layout */
+        #chat-page {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chat-page header {
+            background-color: #F0EAD6; /* Darker shade for header */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        #chat-page header img {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+        }
+
+        #chat-page header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        #chat-page header p {
+            font-size: 0.875rem;
+            color: #CC6E00; /* Main color */
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background-color: #FAF3E0; /* Beige tint for chat area */
+            /* Removed background image */
+        }
+        
+        /* Chat Bubbles and Messages */
+        .message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            max-width: 100%;
+        }
+
+        .message-wrapper.user {
+            justify-content: flex-end;
+        }
+        
+        .message-wrapper.agent {
+            justify-content: flex-start;
+        }
+        
+        .message-wrapper .avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .message-wrapper .bubble {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .bubble.user-bubble {
+            background-color: #FF8C00; /* Main color */
+            color: white;
+        }
+
+        .bubble.agent-bubble {
+            background-color: #EFEBE0; /* Contrasting beige for agent bubble */
+            color: #1f2937;
+        }
+
+        /* Chat Input Footer */
+        #chat-page footer {
+            background-color: #F0EAD6; /* Darker shade for footer */
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem;
+            flex-shrink: 0;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            max-width: 80rem;
+            margin: 0 auto;
+        }
+
+        #message-input {
+            font-family: "Jacques Francois", sans-serif;
+            flex-grow: 1;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem 0 0 0.5rem;
+            padding: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        #message-input:focus {
+            outline: none;
+            border-color: #FF8C00; /* Main color */
+            box-shadow: 0 0 0 2px #FF8C00; /* Main color */
+        }
+
+        #send-btn {
+            background-color: #FF8C00; /* Main color */
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #send-btn:hover {
+            background-color: #CC6E00; /* Darker shade for hover */
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-page">
+        <header>
+             <img src="./dp1.jpeg" alt="Agent Avatar">
+            <div>
+                <h2>The Battle ground of Kurukshetra</h2>
+                <p>within your mind</p>
+            </div>
+        </header>
+
+        <main id="chat-messages">
+             <div class="message-wrapper agent">
+                <img src="./dp1.jpeg" alt="Agent Avatar" class="avatar">
+                <div class="bubble agent-bubble">
+                    <p>Namaste! I am here to answer your questions to the best of my ability. I could be wrong sometimes. It's best that you read the bhagavad gita yourself. But hey, until you do that, how may I assist you?</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="input-container">
+                <input type="text" id="message-input" placeholder="What do you have on your mind?" autocomplete="off">
+                <button id="send-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        let sessionId = null;
+
+        // --- Page Load Handler ---
+        document.addEventListener('DOMContentLoaded', () => {
+            sessionId = sessionStorage.getItem('chatSessionId');
+            if (!sessionId) {
+                // If no session is found, redirect back to the landing page
+                window.location.href = 'index.html';
+                return;
+            }
+            console.log(`Session continued: ${sessionId}`);
+            messageInput.focus();
+        });
+
+        // --- Event Listeners ---
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // --- Functions ---
+        function sendMessage() {
+            const prompt = messageInput.value.trim();
+            if (!prompt) return;
+
+            appendMessage(prompt, 'user');
+            messageInput.value = '';
+
+            const loadingBubble = showLoadingIndicator();
+
+            fetch('http://localhost:3000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId, prompt }),
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                loadingBubble.remove();
+                appendMessage(data.response, 'agent');
+            })
+            .catch(error => {
+                console.error('Error fetching chat response:', error);
+                loadingBubble.remove();
+                appendMessage('Sorry, I encountered an error. Please try again.', 'agent', true);
+            });
+        }
+
+        function appendMessage(text, sender, isError = false) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('message-wrapper', sender);
+
+            const avatar = document.createElement('img');
+            avatar.classList.add('avatar');
+            
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.textContent = text;
+            
+            if (sender === 'user') {
+                avatar.src = "./dp2.png";
+                avatar.alt = 'User Avatar';
+                bubble.classList.add('user-bubble');
+                messageWrapper.appendChild(bubble);
+                messageWrapper.appendChild(avatar);
+            } else { // agent
+                avatar.src = './dp1.jpeg';
+                avatar.alt = 'Agent Avatar';
+                bubble.classList.add('agent-bubble');
+                if (isError) {
+                    bubble.style.backgroundColor = '#ef4444';
+                    bubble.style.color = 'white';
+                }
+                messageWrapper.appendChild(avatar);
+                messageWrapper.appendChild(bubble);
+            }
+
+            chatMessages.appendChild(messageWrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showLoadingIndicator() {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('message-wrapper', 'agent');
+            
+            const avatar = document.createElement('img');
+            avatar.src = './dp1.jpeg';
+            avatar.alt = 'Agent Avatar';
+            avatar.classList.add('avatar');
+
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble', 'agent-bubble');
+
+            const loadingDots = document.createElement('div');
+            loadingDots.style.display = 'flex';
+            loadingDots.style.alignItems = 'center';
+            loadingDots.style.gap = '0.25rem';
+
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('span');
+                dot.style.width = '0.5rem';
+                dot.style.height = '0.5rem';
+                dot.style.backgroundColor = '#6b7280';
+                dot.style.borderRadius = '50%';
+                dot.style.animation = `bounce 1.4s infinite ease-in-out both`;
+                dot.style.animationDelay = `${i * 0.2}s`;
+                loadingDots.appendChild(dot);
+            }
+            
+            bubble.appendChild(loadingDots);
+            messageWrapper.appendChild(avatar);
+            messageWrapper.appendChild(bubble);
+            chatMessages.appendChild(messageWrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            if (!document.getElementById('animation-styles')) {
+                const styleSheet = document.createElement("style");
+                styleSheet.id = 'animation-styles';
+                styleSheet.type = "text/css";
+                const keyframes = `@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }`;
+                styleSheet.innerText = keyframes;
+                document.head.appendChild(styleSheet);
+            }
+
+            return messageWrapper;
+        }
+    </script>
+</body>
+</html>

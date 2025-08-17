@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Wisdom of Gita</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jacques+Francois&display=swap" rel="stylesheet">
+    <style>
+        /* General Reset and Body Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Jacques Francois", sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            overflow: hidden;
+        }
+
+        /* Landing Page Styles */
+        #landing-page {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("./bg.png");
+            background-size: cover;
+            background-position: center;
+        }
+
+        #landing-page h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        #landing-page p {
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+            max-width: 42rem;
+        }
+
+        #start-chat-btn {
+            font-family: "Jacques Francois", sans-serif;
+            background-color: #FF8C00;
+            color: white;
+            font-weight: 700;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #start-chat-btn:hover {
+            background-color: #CC6E00;
+            transform: scale(1.05);
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (min-width: 768px) {
+            #landing-page h1 {
+                font-size: 4.5rem;
+            }
+            #landing-page p {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Landing Page Section -->
+    <div id="landing-page">
+        <h1>Wisdom of the Gita.</h1>
+        <p>Ask what's bothering you and seek clarity from the words of gita</p>
+        <button id="start-chat-btn">Start Chat</button>
+    </div>
+
+    <script>
+        const startChatBtn = document.getElementById('start-chat-btn');
+
+        startChatBtn.addEventListener('click', () => {
+            // Generate a unique session ID
+            const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+            
+            // Store the session ID in sessionStorage to pass it to the next page
+            sessionStorage.setItem('chatSessionId', sessionId);
+            
+            // Redirect to the chat page
+            window.location.href = 'chat.html';
+        });
+    </script>
+</body>
+</html>
